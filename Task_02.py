@@ -3,7 +3,7 @@
 # За основу возьмите любую статью из википедии или из документации к языку.
 from typing import Dict, Any
 
-# Строка для обработки ресурс https://www.blindtextgenerator.com/lorem-ipsum
+# Текст для обработки ресурс https://www.blindtextgenerator.com/lorem-ipsum
 WORK_TEXT = "But I must explain to you how all this mistaken idea of denouncing pleasure and praising pain was born " \
             "and I will give you a complete account of the system, and expound the actual teachings of the great " \
             "explorer of the truth, the master-builder of human happiness. No one rejects, dislikes, or avoids " \
@@ -34,12 +34,12 @@ WORK_TEXT = "But I must explain to you how all this mistaken idea of denouncing 
             "exercise, except to obtain some advantage from it? But who has any right to find fault with a man who " \
             "chooses to enjoy a pleasure that has no annoying consequences, or one who avoids a pain"
 
-# кол-во возвращаемых слов
-WORDS_COUNT_FREQUENT = 10
+# кол-во требуемых слов
+FREQUENT_COUNT = 10
 
 
-# Возврат 10 самых часто используемых слов из текста в виде строки, разделенных пробелами
-def most_frequent_words(text: str) -> dict:
+# Возврат count_words самых часто используемых слов из текста в виде строки, разделенных пробелами
+def most_frequent_words(text: str, count_words: int) -> dict:
     # удалить знаки препинания, привести к единому регистру, тире ищем только как знак препинания,
     # дефис разделяющий части слова - является его частью
     words_list = text.upper() \
@@ -56,11 +56,11 @@ def most_frequent_words(text: str) -> dict:
     for w in words_list:
         words_count[w] = words_list.count(w)
     # сортируем словарь по значениям, отбираем только нужное количество
-    return dict(sorted(words_count.items(), key=lambda item: item[1], reverse=True)[:WORDS_COUNT_FREQUENT])
+    return dict(sorted(words_count.items(), key=lambda item: item[1], reverse=True)[:count_words])
 
 
 def main():
-    for i, w in enumerate(most_frequent_words(WORK_TEXT).items(), 1):
+    for i, w in enumerate(most_frequent_words(WORK_TEXT, FREQUENT_COUNT).items(), 1):
         print(f"{i:2}. {w[0]:<10} - {w[1]}")
 
 
