@@ -47,7 +47,6 @@ def bag_all_pack(things: dict[str, int], bag_volume: int) -> list:
 
     :things: словарь вещей для анализа
     :bag_volume: размер заполняемого рюкзака
-    :only_best: вернуть только наиболее оптимальные варианты заполнения
     """
     bag_list: list[list[int | set]] = []
     best_case = 0
