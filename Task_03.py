@@ -60,7 +60,7 @@ def bag_all_pack(things: dict[str, int], bag_volume: int) -> list:
                 # пропустить, если добавление невозможно к существующему набору или уже найдено решение,
                 # более полно заполняющее рюкзак
                 weight = x[0] + t_val
-                if bag_volume >= weight >= best_case and not x[1].issubset(t_key):
+                if bag_volume >= weight and not x[1].issubset(t_key):
                     y: list[int | set] = copy.deepcopy(x)
                     y[0] += t_val
                     y[1].add(t_key)
@@ -69,7 +69,7 @@ def bag_all_pack(things: dict[str, int], bag_volume: int) -> list:
             if len(tmp_list):
                 for t in tmp_list:
                     bag_list.append(t)
-            if bag_volume >= t_val >= best_case:
+            if bag_volume >= t_val:
                 bag_list.append([t_val, {t_key}])
 
     bag_list = list(filter(lambda b: b[0] == best_case, bag_list))
@@ -95,7 +95,7 @@ def main():
     print("Щедрый алгоритм:")
     print_bag(bag_pack(THINGS_DICT, BAG_SIZE, False))
     print()
-    print("Все возможные варианты:")
+    print("Все наилучшие варианты:")
     for x in bag_all_pack(THINGS_DICT, BAG_SIZE):
         print_bag(x)
 
