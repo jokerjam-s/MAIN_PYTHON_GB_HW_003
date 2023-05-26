@@ -63,12 +63,13 @@ def bag_all_pack(things: dict[str, int], bag_volume: int) -> list:
                     y[0] += t_val
                     y[1].add(t_key)
                     tmp_list.append(y)
-                    best_case = weight
+                    best_case = weight if weight > best_case else best_case
             if len(tmp_list):
                 for t in tmp_list:
                     bag_list.append(t)
             if bag_volume >= t_val:
                 bag_list.append([t_val, {t_key}])
+                best_case = t_val if t_val > best_case else best_case
 
     bag_list = list(filter(lambda b: b[0] == best_case, bag_list))
     return bag_list
