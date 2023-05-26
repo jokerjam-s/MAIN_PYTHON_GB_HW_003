@@ -4,86 +4,91 @@
 # *Верните все возможные варианты комплектации рюкзака.
 from ctypes.wintypes import tagMSG
 import copy
-from typing import Dict, List
 
-THINGS_DICT = {"fork": 1,
-               "spoon": 1,
-               "water": 3,
-               "boots": 3,
-               "jacket": 5,
-               "camera": 4,
-               "teapot": 4,
-               "tent": 12,
-               "food": 5,
-               "jeans": 4,
-               "socks": 1,
+# Словарь вещей
+THINGS_DICT = {"вилка": 1,
+               "ложка": 1,
+               "вода": 3,
+               "ботинки": 3,
+               "куртка": 5,
+               "камера": 4,
+               "чайник": 4,
+               "палатка": 12,
+               "еда": 5,
+               "джинсы": 4,
+               "посуда": 2,
                }
+# Размер рюкзака
+BAG_SIZE = 8
 
 
-# "жадный" рюкзак - забирает вещи пока есть место,
-# по принципу - хватай самый большой, при этом может проигнорировать случай когда
-# более мелкими предметами можно заполнить рюкзак более полно
-def bag_dummy(things: dict[str, int], bag_volume: int) -> dict[int, list]:
-    tmp_dict = dict(sorted(things.items(), key=lambda x: x[1], reverse=True))
-    things_list: [str] = []
-    total_volume = 0
+def bag_pack(things: dict[str, int], bag_volume: int, mode_greed=True) -> list[int | set]:
+    """'Жадный' или 'Щедрый' рюкзак - забирает вещи пока есть место.
+    В жадном режиме заполняет начиная с вещей от большего веса к меньшему,
+    в щедром - наоборот, заполнение ведется от вещей с наименьшим весом.
+
+    :things: словарь вещей для анализа
+    :bag_volume: размер заполняемого рюкзака
+    :mode_greed: режим работы True - жадный, False - щедрый
+    """
+    tmp_dict = dict(sorted(things.items(), key=lambda x: x[1], reverse=mode_greed))
+    things_list: [int | set] = [0, set()]  # первый элемент - занятый размер, остальное - уложенные вещи
     # пока не наполнен рюкзак
     for t_key, t_val in tmp_dict.items():
-        if (total_volume + t_val) <= bag_volume:
-            things_list.append(t_key)
-            total_volume += t_val
+        if (things_list[0] + t_val) <= bag_volume:
+            things_list[1].add(t_key)
+            things_list[0] += t_val
 
-    return {total_volume: things_list}
+    return things_list
 
 
-# "умный" рюкзак - старается взять как можно больше вещей
-# all_solution - вернуть все возможные решения если True
-# иначе - наиболее оптимальное
-# результат словарь key - размер, set - перечень предметов
-def bag_smart(things: dict[str, int], bag_volume: int, all_solution=False) -> dict[int, list]:
-    bag_dict: dict[int, list[str]] = {}
-    tmp_bag: dict[int, list[str]] = {}
+def bag_all_pack(things: dict[str, int], bag_volume: int, only_best=True) -> list:
+    """Поиск всех вариантов упаковки.
 
+    :things: словарь вещей для анализа
+    :bag_volume: размер заполняемого рюкзака
+    :only_best: вернуть только наиболее оптимальные варианты заполнения
+    """
+    bag_list: list[list[int | set]] = []
+    # отобрать только подходящие вещи, в дальнейшем работа только с ними
     for t_key, t_val in things.items():
-        tmp_dict = {}
-        if len(tmp_bag):
-            for x, y in tmp_bag.items():
-                tmp = try_push_things({t_val, [t_key]}, {x, y})
+        for x in bag_list:
+            tmp_list = []
+            if x[0] + t_val <= bag_volume and t_key not in x[1]:
+                y: list[int | set] = copy.deepcopy(x)
+                y[0] += t_val
+                y[1].add(t_key)
+                tmp_list.append(y)
+        bag_list.append(tmp_list)
 
-        # if len(tmp_bag):
-        #     tmp_dict = {}
-        #     for b_key, b_val in tmp_bag.items():
-        #         if b_key + t_val <= bag_volume:
-        #             new_val = copy.deepcopy(b_val)
-        #             for x in new_val:
-        #                 x.append(t_key)
-        #             tmp_dict[b_key + t_val] = new_val
-        #     if len(tmp_dict):
-        #         tmp_bag.update(tmp_dict)
         if t_val <= bag_volume:
-            tmp_bag.setdefault(t_val, []).append([t_key])
+            bag_list.append([t_val, set(t_key)])
+
+    return bag_list
 
 
-    if all_solution:
-        bag_dict = tmp_bag
-    else:
-        bag_dict = {x: y for x, y in tmp_bag.items() if x == max(tmp_bag.keys())}
-    return bag_dict
-
-
-# Проверка возможности укладки наборов в рюкзак
-def try_push_things(things_1: dict[int, list[str]], things_2: dict[int, list], bag_size: int) -> dict[list[str]] | None:
-    result = None
-    if things_1[0] + things_2[0] <= bag_size:
-        things_new = copy.deepcopy(things_1[1]).append(copy.deepcopy(things_2[1]))
-        result = {things_1[0] + things_2[0]: things_new}
-    return result
+def print_bag(bag: list[int | str]):
+    """Вывод содержимого рюкзака."""
+    for x in bag:
+        if isinstance(x, int):
+            print(f"Взято {x}", end=" | ")
+        else:
+            print(f"{x}")
 
 
 def main():
+    print(f"Размер рюкзака - {BAG_SIZE}")
+    print("Перечень вещей:")
     print(THINGS_DICT)
-    print(bag_dummy(THINGS_DICT, 7))
-    print(bag_smart(THINGS_DICT, 7))
+    print("Жадный алгоритм:")
+    print_bag(bag_pack(THINGS_DICT, BAG_SIZE))
+    print()
+    print("Щедрый алгоритм:")
+    print_bag(bag_pack(THINGS_DICT, BAG_SIZE, False))
+
+    print(bag_all_pack(THINGS_DICT, BAG_SIZE))
+    # print(bag_dummy(THINGS_DICT, BAG_SIZE))
+    # print(bag_smart(THINGS_DICT, BAG_SIZE))
 
 
 if __name__ == "__main__":
