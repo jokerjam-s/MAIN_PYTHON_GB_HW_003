@@ -57,8 +57,7 @@ def bag_all_pack(things: dict[str, int], bag_volume: int) -> list:
         if t_val <= BAG_SIZE:
             tmp_list = []
             for x in bag_list:
-                # пропустить, если добавление невозможно к существующему набору или уже найдено решение,
-                # более полно заполняющее рюкзак
+                # пропустить, если добавление невозможно к существующему набору
                 weight = x[0] + t_val
                 if bag_volume >= weight and not x[1].issubset(t_key):
                     y: list[int | set] = copy.deepcopy(x)
