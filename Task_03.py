@@ -19,7 +19,7 @@ THINGS_DICT = {"вилка": 1,
                "посуда": 2,
                }
 # Размер рюкзака
-BAG_SIZE = 8
+BAG_SIZE = 5
 
 
 def bag_pack(things: dict[str, int], bag_volume: int, mode_greed=True) -> list[int | set]:
@@ -42,7 +42,7 @@ def bag_pack(things: dict[str, int], bag_volume: int, mode_greed=True) -> list[i
     return things_list
 
 
-def bag_all_pack(things: dict[str, int], bag_volume: int, only_best=True) -> list:
+def bag_all_pack(things: dict[str, int], bag_volume: int) -> list:
     """Поиск всех вариантов упаковки.
 
     :things: словарь вещей для анализа
@@ -50,24 +50,33 @@ def bag_all_pack(things: dict[str, int], bag_volume: int, only_best=True) -> lis
     :only_best: вернуть только наиболее оптимальные варианты заполнения
     """
     bag_list: list[list[int | set]] = []
-    # отобрать только подходящие вещи, в дальнейшем работа только с ними
+    best_case = 0
+    # отобрать только подходящие вещи
     for t_key, t_val in things.items():
-        for x in bag_list:
+        # пропустить - если вещь не влазит в рюкзак
+        if t_val <= BAG_SIZE:
             tmp_list = []
-            if x[0] + t_val <= bag_volume and t_key not in x[1]:
-                y: list[int | set] = copy.deepcopy(x)
-                y[0] += t_val
-                y[1].add(t_key)
-                tmp_list.append(y)
-        bag_list.append(tmp_list)
+            for x in bag_list:
+                # пропустить, если добавление невозможно к существующему набору или уже найдено решение,
+                # более полно заполняющее рюкзак
+                weight = x[0] + t_val
+                if bag_volume >= weight >= best_case and not x[1].issubset(t_key):
+                    y: list[int | set] = copy.deepcopy(x)
+                    y[0] += t_val
+                    y[1].add(t_key)
+                    tmp_list.append(y)
+                    best_case = weight
+            if len(tmp_list):
+                for t in tmp_list:
+                    bag_list.append(t)
+            if bag_volume >= t_val >= best_case:
+                bag_list.append([t_val, {t_key}])
 
-        if t_val <= bag_volume:
-            bag_list.append([t_val, set(t_key)])
-
+    bag_list = list(filter(lambda b: b[0] == best_case, bag_list))
     return bag_list
 
 
-def print_bag(bag: list[int | str]):
+def print_bag(bag: list[int | set]):
     """Вывод содержимого рюкзака."""
     for x in bag:
         if isinstance(x, int):
@@ -85,10 +94,10 @@ def main():
     print()
     print("Щедрый алгоритм:")
     print_bag(bag_pack(THINGS_DICT, BAG_SIZE, False))
-
-    print(bag_all_pack(THINGS_DICT, BAG_SIZE))
-    # print(bag_dummy(THINGS_DICT, BAG_SIZE))
-    # print(bag_smart(THINGS_DICT, BAG_SIZE))
+    print()
+    print("Все возможные варианты:")
+    for x in bag_all_pack(THINGS_DICT, BAG_SIZE):
+        print_bag(x)
 
 
 if __name__ == "__main__":
